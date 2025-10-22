@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinAI Sommelier - Rutas y Tours Enológicos 🍷</title>
+    
+    <link rel="stylesheet" href="css/style.css"> 
+    <link rel="shortcut icon" href="Favicon_Enoturismo.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="#" class="navbar-logo">
+                VinAI <i class="fas fa-wine-glass-alt"></i>
+            </a>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="#inicio" class="nav-link">Inicio</a></li>
+                <li class="nav-item"><a href="#servicios" class="nav-link">Servicios</a></li>
+                <li class="nav-item"><a href="https://www.enoturismochile.cl/" class="nav-link">Valles</a></li>
+                <li class="nav-item"><a href="http://localhost:8080/login" class="nav-link">Usuario</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div id="inicio" class="page-wrapper">
+        <header>
+            <div class="background-image-animated"></div> 
+            <h1>Descubre el Enoturismo en Chile con VinAI</h1>
+            <p>Tu guía virtual para planificar la ruta perfecta: encuentra tours, degustaciones y viñas abiertas en los valles más emblemáticos.</p>
+        </header>
+
+        <main id="servicios" class="main-content">
+            <h2 class="section-title">Encuentra tu Ruta Enológica Ideal</h2>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <i class="fas fa-route"></i>
+                    <h2>Planificador de Rutas</h2>
+                    <p>Dinos qué valles quieres visitar y te organizamos un itinerario optimizado, con horarios de tours y consejos de traslado.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-map-marked-alt"></i>
+                    <h2>Viñas por Valle</h2>
+                    <p>Explora las bodegas disponibles en tus valles favoritos: Maipo, Colchagua, Casablanca, Aconcagua y más. Consulta horarios y reserva.</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <h2>Tours Especializados</h2>
+                    <p>Busca tours específicos (barricas, cosecha, premium) y consulta su disponibilidad y precios en tiempo real.</p>
+                </div>
+            </div>
+            
+            <section class="cta-section">
+                <h2 class="section-title" style="margin-bottom: 20px;">¿Empezamos a planificar?</h2>
+                <p style="color: #A0A0A0; font-size: 1.1em;">Haz clic en el ícono de la copa de vino flotante para que VinAI, tu asistente de enoturismo, te guíe en la búsqueda de tu próxima experiencia.</p>
+                <a href="javascript:void(0);" onclick="toggleChat()" class="cta-button"><i class="fas fa-wine-glass-alt"></i> Consultar Asistente</a>
+            </section>
+        </main>
+
+        <footer>
+            <i class="fas fa-tree" style="color: var(--gold-accent); margin-right: 5px;"></i> &copy; 2025 VinAI | Rutas Enológicas de Chile.
+        </footer>
+    </div>
+    
+    <div id="chat-bubble" title="Abrir Chat VinAI"><i class="fas fa-wine-glass-alt"></i></div>
+
+    <div id="chat-container">
+        <div class="chat-header">
+            <div>
+                <h3>VinAI Sommelier</h3>
+                <span>Tu asistente virtual</span>
+            </div>
+            <div class="chat-header-icons">
+                 <button id="speaker-button" title="Activar/Desactivar Lectura"><i class="fas fa-volume-up"></i></button>
+                 <button id="close-button" title="Cerrar Chat"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div id="messages"></div>
+        <div id="typing-indicator" style="display: none;">
+            <img src="https://via.placeholder.com/35/1A1A1A/D4AF37?text=AI" alt="Bot Avatar" class="avatar"> 
+            <div class="dot-pulse"></div>
+        </div>
+        <div id="quick-replies">
+            <button data-payload="/recomendar_vino"><i class="fas fa-wine-bottle"></i> Recomendar Vino</button>
+            <button data-payload="/recomendar_tour"><i class="fas fa-map-signs"></i> Buscar Tour</button>
+        </div>
+        <div id="input-area">
+            <input type="text" id="user-input" placeholder="Escribe tu consulta aquí..." autocomplete="off">
+            <button id="voice-button" title="Activar/Desactivar Voz"><i class="fas fa-microphone"></i></button>
+            <button id="send-button" title="Enviar Mensaje"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="js/bot.js"></script>
+
+</body>
+</html>

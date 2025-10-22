@@ -1,0 +1,38 @@
+{
+  "lookup": {
+    "rules": {
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"informar_gusto\"}}]": "action_recomendar_vino_db",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"informar_gusto\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_vino_db\"}, \"user\": {\"intent\": \"informar_gusto\"}}]": "action_listen",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"despedirse\"}}]": "utter_despedirse",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"despedirse\"}}, {\"prev_action\": {\"action_name\": \"utter_despedirse\"}, \"user\": {\"intent\": \"despedirse\"}}]": "action_listen",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_vino\"}}]": "action_recomendar_vino_db",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_vino\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_vino_db\"}, \"user\": {\"intent\": \"recomendar_vino\"}}]": "action_listen",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}]": "action_buscar_tour",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}, {\"prev_action\": {\"action_name\": \"action_buscar_tour\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}]": "action_listen",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"saludar\"}}]": "utter_saludar",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"saludar\"}}, {\"prev_action\": {\"action_name\": \"utter_saludar\"}, \"user\": {\"intent\": \"saludar\"}}]": "action_listen",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_tour\"}}]": "action_recomendar_tour_db",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_tour\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_tour_db\"}, \"user\": {\"intent\": \"recomendar_tour\"}}]": "action_listen"
+    },
+    "rule_only_slots": [],
+    "rule_only_loops": [],
+    "rules_for_loop_unhappy_path": {},
+    "rules_not_in_stories": [
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_tour\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_tour_db\"}, \"user\": {\"intent\": \"recomendar_tour\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"despedirse\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"informar_gusto\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_vino_db\"}, \"user\": {\"intent\": \"informar_gusto\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_vino\"}}, {\"prev_action\": {\"action_name\": \"action_recomendar_vino_db\"}, \"user\": {\"intent\": \"recomendar_vino\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"informar_gusto\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"despedirse\"}}, {\"prev_action\": {\"action_name\": \"utter_despedirse\"}, \"user\": {\"intent\": \"despedirse\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"saludar\"}}, {\"prev_action\": {\"action_name\": \"utter_saludar\"}, \"user\": {\"intent\": \"saludar\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_vino\"}}]",
+      "predicting default action with intent restart",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"saludar\"}}]",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}, {\"prev_action\": {\"action_name\": \"action_buscar_tour\"}, \"user\": {\"intent\": \"buscar_tour_vina\"}}]",
+      "predicting default action with intent back",
+      "predicting default action with intent session_start",
+      "[{\"prev_action\": {\"action_name\": \"action_listen\"}, \"user\": {\"intent\": \"recomendar_tour\"}}]"
+    ]
+  }
+}

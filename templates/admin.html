@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - VinAI</title>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #121212; color: #F5F5F5; padding: 20px; }
+        h1, h2 { font-family: 'Playfair Display', serif; color: #D4AF37; }
+        .container { max-width: 1000px; margin: auto; }
+        .panel { background: #1A1A1A; padding: 25px; border-radius: 5px; margin-bottom: 30px; border: 1px solid #2A2A2A; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, select { width: 100%; padding: 10px; background: #2E2E2E; color: #F5F5F5; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; }
+        button, .button { 
+            background: #D4AF37; color: #121212; border: none; padding: 12px 20px; border-radius: 5px; 
+            font-weight: 700; font-size: 1em; cursor: pointer; transition: all 0.3s; text-decoration: none;
+            display: inline-block; text-align: center;
+        }
+        button:hover, .button:hover { background: #E8C44D; }
+        /* === NOVEDAD: Estilo para botones deshabilitados === */
+        button:disabled, .button.disabled {
+            background: #555 !important; /* Fondo gris */
+            color: #999 !important;      /* Texto gris */
+            cursor: not-allowed !important; /* Cursor de no permitido */
+            pointer-events: none;       /* Desactiva clics en enlaces 'a' */
+        }
+
+        .button.start { background: #28a745; color: white; }
+        .button.start:hover:not(:disabled) { background: #34c759; }
+        .button.stop { background: #dc3545; color: white; }
+        .button.stop:hover:not(:disabled) { background: #ff453a; }
+        
+        .full-width { grid-column: 1 / -1; }
+        .messages { list-style: none; padding: 0; }
+        .messages li { padding: 15px; border-radius: 5px; margin-bottom: 10px; }
+        .messages .success { background: #2a5a2a; color: white; }
+        .messages .error { background: #8C1D18; color: white; }
+        .messages .info { background: #004a99; color: white; }
+
+        .status-light { height: 12px; width: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .status-light.running { background-color: #28a745; }
+        .status-box { background: #2E2E2E; padding: 10px 15px; border-radius: 5px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; }
+        .admin-header .button.logout { background: none; border: 1px solid #dc3545; color: #dc3545; font-size: 0.9em; padding: 8px 15px; }
+        .admin-header .button.logout:hover { background: #dc3545; color: white; }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="admin-header">
+            <h1><i class="fas fa-shield-alt"></i> Panel de VinAI</h1>
+            <div>
+                <span style="margin-right: 15px;">Hola, <strong>{{ current_user.username }}</strong></span>
+                <a href="/logout" class="button logout">Cerrar Sesión</a>
+            </div>
+        </div>
+        <p><button><a href="http://localhost:8000/index.html" style="color: inherit; text-decoration: none;">Volver al inicio</a></button></p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="messages">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="panel">
+            <h2><i class="fas fa-server"></i> Estado del Bot</h2>
+            <div class="status-box">
+                <span>Servidor Rasa Core: 
+                    <span class="status-light {{ 'running' if core_status == 'Corriendo' else '' }}"></span>
+                    <strong>{{ core_status }}</strong>
+                </span>
+                <br>
+                <span>Servidor de Acciones: 
+                    <span class="status-light {{ 'running' if actions_status == 'Corriendo' else '' }}"></span>
+                    <strong>{{ actions_status }}</strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2><i class="fas fa-wine-bottle"></i> Añadir Nuevo Vino (Actualización en Vivo)</h2>
+            <p>Los vinos añadidos aquí estarán disponibles para el bot <strong>instantáneamente</strong>.</p>
+            <form action="/add_wine" method="POST">
+                 <div><label for="nombre">Nombre del Vino:</label><input type="text" id="nombre" name="nombre" required></div>
+                <div><label for="cepa">Cepa:</label><input type="text" id="cepa" name="cepa" required></div>
+                <div><label for="ano">Año:</label><input type="number" id="ano" name="ano" min="1900" max="2050" required></div>
+                <div><label for="tipo">Tipo:</label><select id="tipo" name="tipo"><option value="Tinto">Tinto</option><option value="Blanco">Blanco</option><option value="Rosado">Rosado</option><option value="Espumante">Espumante</option></select></div>
+                <div><label for="vina_id">ID de la Viña:</label><input type="number" id="vina_id" name="vina_id" required></div>
+                <div><label for="link_compra">Link de Compra:</label><input type="url" id="link_compra" name="link_compra"></div>
+                <div class="full-width"><button type="submit">Añadir Vino a la Base de Datos</button></div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h2><i class="fas fa-cogs"></i> Panel de Control del Bot</h2>
+            <p>Inicia los servidores para que el bot funcione. Deténlos antes de re-entrenar.</p>
+            <a href="/start_bot" 
+               class="button start {{ 'disabled' if core_status == 'Corriendo' and actions_status == 'Corriendo' else '' }}" 
+               style="margin-right: 10px;">
+               Iniciar Servidores
+            </a>
+            <a href="/stop_bot" 
+               class="button stop {{ 'disabled' if core_status == 'Detenido' and actions_status == 'Detenido' else '' }}">
+               Detener Servidores
+            </a>
+            
+            <h2 style="margin-top: 30px;">Re-entrenamiento</h2>
+            <p><strong>Flujo:</strong> 1. Detener Servidores ➔ 2. Re-entrenar ➔ 3. Iniciar Servidores.</p>
+             <a href="/rasa_train" 
+               class="button {{ 'disabled' if core_status == 'Corriendo' or actions_status == 'Corriendo' else '' }}">
+               Iniciar Re-entrenamiento
+            </a>
+        </div>
+    </div>
+</body>
+</html>

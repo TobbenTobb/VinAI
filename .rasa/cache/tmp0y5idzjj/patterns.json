@@ -1,0 +1,14 @@
+[
+  {
+    "name": "caracteristica",
+    "pattern": "(\\bRobusto\\b|\\bFresco\\b|\\bSeco\\b|\\bDulce\\b|\\bOrgánico\\b|\\bReserva\\b)"
+  },
+  {
+    "name": "maridaje",
+    "pattern": "(\\bParrillada\\b|\\bSushi\\b|\\bCharcutería\\b|\\bPescado\\ Blanco\\b|\\bPostres\\b|\\bComida\\ Asiatica\\b)"
+  },
+  {
+    "name": "sabor_nota",
+    "pattern": "(\\bVainilla\\b|\\bGuinda\\b|\\bPimienta\\b|\\bManzana\\b|\\bCítrico\\b|\\bChocolate\\b|\\bCereza\\b|\\bDurazno\\b)"
+  }
+]

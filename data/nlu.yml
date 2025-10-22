@@ -1,0 +1,125 @@
+version: "3.1"
+nlu:
+- intent: saludar
+  examples: |
+    - hola
+    - buenos dias
+    - que tal
+- intent: despedirse
+  examples: |
+    - adios
+    - chao
+    - nos vemos
+- intent: recomendar_vino
+  examples: |
+    - recomiéndame un vino
+    - qué me recomiendas
+    - recomiéndame un [tinto](tipo_vino)
+    - tienes un [carmenere](cepa)?
+    - busco un [blanco](tipo_vino)
+    - un [vino](tipo_vino) para [sushi](maridaje)
+    - un vino [fresco](caracteristica) del [valle de Casablanca](valle)
+    - busco un [Cabernet](cepa) [Robusto](caracteristica)
+    - qué vino [dulce](caracteristica) me sugieres
+    - un [tinto](tipo_vino) con notas a [chocolate](sabor_nota)
+    # === NOVEDAD: Ejemplos que incluyen el año ===
+    - quiero un tinto del [2020](ano)
+    - dame un vino de [1999](ano)
+    - busco un [Cabernet Sauvignon](cepa) de [2018](ano)
+
+# === NOVEDAD: Intent específico para cuando el usuario solo da el año ===
+- intent: informar_ano
+  examples: |
+    - del año [1987](ano)
+    - de la cosecha [1995](ano)
+    - que sea del [2010](ano)
+    - tienes algo de [1989](ano)?
+    - busco del [2021](ano)
+    - [2017](ano)
+
+- intent: informar_gusto
+  examples: |
+    - me gustan los [tintos](tipo_vino)
+    - prefiero los [blancos](tipo_vino)
+    - me gusta el [carmenere](cepa)
+    - tiene que ser [orgánico](caracteristica)
+    - algo para [parrillada](maridaje)
+    - con notas a [pimienta](sabor_nota)
+    - en el [valle del maipo](valle)
+- intent: buscar_tour_vina
+  examples: |
+    - qué tours hay en la viña [Santa Rita](vina)?
+    - háblame del tour en [Montes](vina)
+    - quiero visitar [Concha y Toro](vina)
+- intent: recomendar_tour
+  examples: |
+    - recomiéndame un tour
+    - qué viña puedo visitar
+    - recomiéndame un tour en el [Valle de Aconcagua](valle)
+- lookup: caracteristica
+  examples: |
+    - Robusto
+    - Fresco
+    - Seco
+    - Dulce
+    - Orgánico
+    - Reserva
+    - Ligero
+    - Mineral
+    - Biodinámico
+    - Joven
+- lookup: maridaje
+  examples: |
+    - Parrillada
+    - Sushi
+    - Charcutería
+    - Pescado Blanco
+    - Postres
+    - Comida Asiatica
+    - Pizza
+    - Pastas con Salsa Roja
+    - Mariscos
+    - Ensaladas
+- lookup: sabor_nota
+  examples: |
+    - Vainilla
+    - Guinda
+    - Pimienta
+    - Manzana
+    - Cítrico
+    - Chocolate
+    - Cereza
+    - Durazno
+    - Miel
+    - Tabaco
+    - Hierba
+    - Café
+    - Frambuesa
+- lookup: cepa
+  examples: |
+    - Cabernet Sauvignon
+    - Carmenere
+    - Merlot
+    - Pinot Noir
+    - Chardonnay
+    - Sauvignon Blanc
+- lookup: tipo_vino
+  examples: |
+    - tinto
+    - blanco
+    - rosado
+    - espumante
+- lookup: valle
+  examples: |
+    - Maipo
+    - Colchagua
+    - Aconcagua
+    - Casablanca
+    - Leyda
+- lookup: vina
+  examples: |
+    - Concha y Toro
+    - Santa Rita
+    - Casa Silva
+    - Montes
+    - Viña Errázuriz

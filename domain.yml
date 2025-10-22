@@ -1,0 +1,95 @@
+version: "3.1"
+
+# --- INTENTS (Intenciones que el bot debe reconocer) ---
+intents:
+  - saludar
+  - despedirse
+  - recomendar_vino
+  - informar_gusto
+  - buscar_tour_vina
+  - recomendar_tour
+  # === NOVEDAD: Intent para reconocer cuando se especifica un año ===
+  - informar_ano
+
+# --- ENTITIES (Entidades que el bot debe extraer del texto) ---
+entities:
+  - cepa
+  - tipo_vino
+  - valle
+  - vina
+  - sabor_nota
+  - caracteristica
+  - maridaje
+  - ano
+
+# --- SLOTS (Variables donde se guarda la información) ---
+slots:
+  slot_cepa:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: cepa
+      
+  slot_tipo_vino:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: tipo_vino
+
+  slot_valle:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: valle
+      
+  slot_vina:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: vina
+  
+  slot_caracteristica:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: caracteristica
+      
+  slot_maridaje:
+    type: text
+    influence_conversation: true
+    mappings: 
+    - type: from_entity
+      entity: maridaje
+
+  # === NOVEDAD: Slot para guardar el año en la memoria del bot ===
+  slot_ano:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: ano
+
+# --- ACTIONS (Acciones que el bot puede ejecutar) ---
+actions:
+  - action_recomendar_vino_db
+  - action_buscar_tour
+  - action_recomendar_tour_db
+  - utter_saludar
+  - utter_despedirse
+  - utter_pedir_gusto
+  
+# --- RESPONSES (Respuestas predefinidas del bot) ---
+responses:
+  utter_saludar:
+    - text: "¡Hola! Soy VinAI, tu sommelier virtual. ¿Buscas un vino para una ocasión especial, o quieres saber sobre tours de viñas?"
+  
+  utter_despedirse:
+    - text: "¡Adiós! Que tengas un excelente día y salud."
+    
+  utter_pedir_gusto:
+    - text: "¡Claro! Para recomendarte el vino perfecto, ¿podrías decirme qué tipo de vino prefieres (tinto, blanco, etc.), alguna cepa o con qué comida lo vas a maridar?"

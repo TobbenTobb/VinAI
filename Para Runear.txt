@@ -1,0 +1,56 @@
+Para hacer funcionar el proyecto debes instalar 
+
+Debes utilizar python 3.10, si tienes otro python puedes instalarlo igual sin problemas
+luego instalas
+
+pip install rasa
+pip install rasa-sdk
+pip install Flask-Login
+pip install Werkzeug
+
+y debes agregar la BD en el xampp y debe estar runeando el xampp para no tener problemas
+
+y visual estudio code te va a pedeir que python usa y le dices python 3.10
+
+Para entrenarlo si haces modificaciones
+
+rasa train
+
+Luego abres 2 terminales
+
+en la Primera terminal 
+
+Escribes
+
+rasa run actions
+
+y en la segunda terminal 
+
+Escribes
+
+rasa run --enable-api --cors "*"
+
+Y
+
+python -m http.server 8000
+
+y cuando diga en la primera terminal
+
+2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Starting action endpoint server...
+2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_recomendar_vino_db'.
+2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_buscar_tour'.
+2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_recomendar_tour_db'.
+2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Starting plugins...
+2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Action endpoint is up and running on http://0.0.0.0:5055
+
+Y en la segunda
+
+2025-10-20 19:12:07 INFO     root  - Starting Rasa server on http://0.0.0.0:5005
+2025-10-20 19:12:07 INFO     rasa.core.processor  - Loading model models\20251020-183548-generous-differential.tar.gz...
+2025-10-20 19:12:23 WARNING  rasa.shared.utils.common  - The UnexpecTED Intent Policy is currently experimental and might change or be removed in the future 🔬 Please share your feedback on it in the forum (https://forum.rasa.com) to help us make this feature ready for production.
+2025-10-20 19:12:23 INFO     root  - Rasa server is up and running.
+
+
+Y con eso abres el index y ya funcionara todo
+
+Crtl + C para parar las terminales

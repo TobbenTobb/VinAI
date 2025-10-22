@@ -1,0 +1,44 @@
+[
+  {
+    "tag_name": "entity",
+    "ids_to_tags": {
+      "1": "B-cepa",
+      "2": "I-cepa",
+      "3": "L-cepa",
+      "4": "U-cepa",
+      "5": "B-tipo_vino",
+      "6": "I-tipo_vino",
+      "7": "L-tipo_vino",
+      "8": "U-tipo_vino",
+      "9": "B-valle",
+      "10": "I-valle",
+      "11": "L-valle",
+      "12": "U-valle",
+      "13": "B-vina",
+      "14": "I-vina",
+      "15": "L-vina",
+      "16": "U-vina",
+      "0": "O"
+    },
+    "tags_to_ids": {
+      "B-cepa": 1,
+      "I-cepa": 2,
+      "L-cepa": 3,
+      "U-cepa": 4,
+      "B-tipo_vino": 5,
+      "I-tipo_vino": 6,
+      "L-tipo_vino": 7,
+      "U-tipo_vino": 8,
+      "B-valle": 9,
+      "I-valle": 10,
+      "L-valle": 11,
+      "U-valle": 12,
+      "B-vina": 13,
+      "I-vina": 14,
+      "L-vina": 15,
+      "U-vina": 16,
+      "O": 0
+    },
+    "num_tags": 17
+  }
+]

@@ -1,0 +1,36 @@
+version: "3.1"
+rules:
+- rule: Saludar al usuario
+  steps:
+  - intent: saludar
+  - action: utter_saludar
+
+- rule: Despedirse del usuario
+  steps:
+  - intent: despedirse
+  - action: utter_despedirse
+
+- rule: Activar la recomendación de vino
+  steps:
+  - intent: recomendar_vino
+  - action: action_recomendar_vino_db
+
+- rule: Dar recomendación DESPUÉS de informar gusto
+  steps:
+  - intent: informar_gusto
+  - action: action_recomendar_vino_db
+
+- rule: Dar recomendación DESPUÉS de informar el año
+  steps:
+  - intent: informar_ano
+  - action: action_recomendar_vino_db
+
+- rule: Activar la búsqueda de tour por viña
+  steps:
+  - intent: buscar_tour_vina
+  - action: action_buscar_tour
+
+- rule: Activar la recomendación de tour
+  steps:
+  - intent: recomendar_tour
+  - action: action_recomendar_tour_db
