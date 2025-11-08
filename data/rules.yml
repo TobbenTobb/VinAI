@@ -11,31 +11,60 @@ rules:
   - action: utter_despedirse
 
 - rule: Activar la recomendación de vino
+  condition:
+  - active_loop: null # Solo se activa si NO hay un formulario activo
   steps:
   - intent: recomendar_vino
   - action: action_recomendar_vino_db
 
 - rule: Dar recomendación DESPUÉS de informar gusto
+  condition:
+  - active_loop: null # Solo se activa si NO hay un formulario activo
   steps:
   - intent: informar_gusto
   - action: action_recomendar_vino_db
 
 - rule: Dar recomendación DESPUÉS de informar el año
+  condition:
+  - active_loop: null # Solo se activa si NO hay un formulario activo
   steps:
   - intent: informar_ano
   - action: action_recomendar_vino_db
 
 - rule: Activar la búsqueda de tour por viña
+  condition:
+  - active_loop: null # Solo se activa si NO hay un formulario activo
   steps:
   - intent: buscar_tour_vina
   - action: action_buscar_tour
 
 - rule: Activar la recomendación de tour
+  condition:
+  - active_loop: null # Solo se activa si NO hay un formulario activo
   steps:
   - intent: recomendar_tour
   - action: action_recomendar_tour_db
+# === FIN DE LA CORRECCIÓN ===
 
-# === NOVEDAD: Rules de Perfil ===
+- rule: Activar formulario de valoración
+  steps:
+  - intent: valorar_tour
+  - action: valorar_tour_form
+  - active_loop: valorar_tour_form
+
+- rule: Enviar formulario de valoración
+  condition:
+  - active_loop: valorar_tour_form
+  steps:
+  - action: valorar_tour_form
+  - active_loop: null
+  
+- rule: Responder a la petición de ayuda
+  steps:
+  - intent: pedir_ayuda
+  - action: utter_ayuda
+
+# (Tus otras reglas de login/registro no necesitan cambios)
 - rule: Activar registro
   steps:
   - intent: registrar_usuario
@@ -50,28 +79,3 @@ rules:
   steps:
   - intent: guardar_preferencia_vino
   - action: action_guardar_preferencia
-
-# === NOVEDAD: Regla actualizada para activar el Formulario ===
-- rule: Activar formulario de valoración
-  steps:
-  - intent: valorar_tour
-  - action: valorar_tour_form
-  - active_loop: valorar_tour_form
-
-# === NOVEDAD: Regla para manejar el envío del formulario ===
-- rule: Enviar formulario de valoración
-  condition:
-  # La condición es que el formulario esté activo
-  - active_loop: valorar_tour_form
-  steps:
-  # La acción 'valorar_tour_form' se llama
-  - action: valorar_tour_form
-  # El loop se desactiva
-  - active_loop: null
-  # (La lógica de guardado ahora estará en actions.py)
-
-  # === NOVEDAD: Regla de Ayuda ===
-- rule: Responder a la petición de ayuda
-  steps:
-  - intent: pedir_ayuda
-  - action: utter_ayuda
