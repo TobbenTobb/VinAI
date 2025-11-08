@@ -366,3 +366,36 @@ footer { text-align: center; padding: 40px; background-color: var(--dark-gray-bg
     margin-top: 10px;
     font-size: 0.9em;
 }
+
+.modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid #2A2A2A;
+    text-align: center;
+}
+.modal-footer a {
+    color: #D4AF37;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-footer a:hover { text-decoration: underline; }
+
+/* === INICIO DE NOVEDAD: Estilo del enlace de Admin === */
+.modal-admin-link {
+    background: #111;
+    padding: 15px 25px;
+    text-align: center;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+.modal-admin-link a {
+    color: #AAA;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: color 0.3s;
+}
+.modal-admin-link a:hover {
+    color: #FFF;
+}
+.modal-admin-link i {
+    margin-right: 5px;
+}

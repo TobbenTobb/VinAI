@@ -132,9 +132,11 @@ def logout():
 # --- RUTAS DE ADMINISTRACIÓN (PROTEGIDAS) ---
 # ----------------------------------------------
 
+# === NOVEDAD: RUTA DE ADMIN PANEL ACTUALIZADA CON QUERIES ===
 @app.route('/')
 @login_required
 def admin_panel():
+    # 1. Comprobar estado del bot (como antes)
     global rasa_core_process, rasa_actions_process
     core_status = "Detenido"
     actions_status = "Detenido"
@@ -142,7 +144,65 @@ def admin_panel():
         core_status = "Corriendo"
     if rasa_actions_process and rasa_actions_process.poll() is None:
         actions_status = "Corriendo"
-    return render_template('admin.html', core_status=core_status, actions_status=actions_status)
+    
+    # 2. Variables para el Dashboard
+    top_preferencias = []
+    top_tours = []
+    recent_valoraciones = []
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # Query 1: Top 5 de preferencias de usuario
+            query_prefs = """
+                SELECT tipo_preferencia, valor_preferencia, COUNT(*) as total
+                FROM preferencias_usuario
+                GROUP BY tipo_preferencia, valor_preferencia
+                ORDER BY total DESC
+                LIMIT 5;
+            """
+            cursor.execute(query_prefs)
+            top_preferencias = cursor.fetchall()
+            
+            # Query 2: Top 5 de tours mejor valorados
+            query_top_tours = """
+                SELECT v.nombre, AVG(vt.rating) as avg_rating, COUNT(vt.id) as total_ratings
+                FROM valoraciones_tour vt
+                JOIN vinas v ON vt.vina_id = v.id
+                GROUP BY v.nombre
+                ORDER BY avg_rating DESC, total_ratings DESC
+                LIMIT 5;
+            """
+            cursor.execute(query_top_tours)
+            top_tours = cursor.fetchall()
+            
+            # Query 3: Últimas 5 valoraciones
+            query_recent_vals = """
+                SELECT v.nombre as vina_nombre, u.username, vt.rating
+                FROM valoraciones_tour vt
+                JOIN vinas v ON vt.vina_id = v.id
+                JOIN usuarios u ON vt.usuario_id = u.id
+                ORDER BY vt.fecha_valoracion DESC
+                LIMIT 5;
+            """
+            cursor.execute(query_recent_vals)
+            recent_valoraciones = cursor.fetchall()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            flash(f"Error al cargar el dashboard: {err}", "error")
+            
+    # 3. Enviar todo al template
+    return render_template('admin.html', 
+                           core_status=core_status, 
+                           actions_status=actions_status,
+                           top_preferencias=top_preferencias,
+                           top_tours=top_tours,
+                           recent_valoraciones=recent_valoraciones)
+# === FIN DE NOVEDAD ===
 
 # --- Ruta para Añadir Vino ---
 @app.route('/add_wine', methods=['POST'])
@@ -429,6 +489,25 @@ def public_logout():
         flash("Sesión cerrada exitosamente.", "success")
         return redirect("http://localhost:8000/index.html")
 
+
+# === NOVEDAD: Ruta para verificar la sesión ===
+@app.route('/check_session')
+def check_session():
+    """
+    Una ruta 'heartbeat' que el frontend usa al cargar
+    para ver si ya existe una sesión válida en Flask.
+    """
+    if 'public_user_id' in session:
+        # El usuario tiene una sesión de Flask válida
+        return jsonify({
+            "logged_in": True,
+            "username": session.get('public_username', 'Usuario'),
+            "user_id": f"user_{session['public_user_id']}"
+        })
+    else:
+        # No hay sesión de Flask
+        return jsonify({"logged_in": False})
+# === FIN DE NOVEDAD ===
 
 # --- Iniciar el servidor del panel ---
 if __name__ == '__main__':

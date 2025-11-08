@@ -55,3 +55,9 @@ rules:
   steps:
   - intent: valorar_tour
   - action: action_valorar_tour
+
+  # === NOVEDAD: Regla de Ayuda ===
+- rule: Responder a la petición de ayuda
+  steps:
+  - intent: pedir_ayuda
+  - action: utter_ayuda
