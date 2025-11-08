@@ -1,6 +1,5 @@
 version: "3.1"
 
-# --- INTENTS (Intenciones que el bot debe reconocer) ---
 intents:
   - saludar
   - despedirse
@@ -9,15 +8,14 @@ intents:
   - buscar_tour_vina
   - recomendar_tour
   - informar_ano
-  # === NOVEDAD: Intents de Perfil ===
   - registrar_usuario
   - iniciar_sesion
   - guardar_preferencia_vino
   - valorar_tour
-# === NOVEDAD: Intent de Ayuda ===
   - pedir_ayuda
+  - informar_rating
+  - informar_comentario
 
-# --- ENTITIES (Entidades que el bot debe extraer del texto) ---
 entities:
   - cepa
   - tipo_vino
@@ -27,11 +25,10 @@ entities:
   - caracteristica
   - maridaje
   - ano
-  # === NOVEDAD: Entidades de Perfil ===
   - email
   - password
+  - rating_number
 
-# --- SLOTS (Variables donde se guarda la información) ---
 slots:
   slot_cepa:
     type: text
@@ -82,7 +79,6 @@ slots:
     - type: from_entity
       entity: ano
 
-  # === NOVEDAD: Slots de Sesión ===
   slot_email:
     type: text
     influence_conversation: false
@@ -95,12 +91,44 @@ slots:
     mappings:
     - type: from_entity
       entity: password
-  slot_user_id: # Guardará el ID del usuario logueado
+      
+  slot_user_id:
     type: text
     influence_conversation: true
-    mappings: [] # Se llena solo desde la action
+    mappings: [] 
+    
+  slot_vina_a_valorar: 
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: vina
 
-# --- ACTIONS (Acciones que el bot puede ejecutar) ---
+  slot_rating:
+    type: categorical
+    values: ["1", "2", "3", "4", "5"] 
+    influence_conversation: false
+    mappings:
+    - type: from_entity
+      entity: rating_number
+  
+  slot_comentario:
+    type: text
+    influence_conversation: false
+    mappings:
+    - type: from_text 
+      conditions:
+      - active_loop: valorar_tour_form
+        requested_slot: slot_comentario
+
+# === SECCIÓN 'FORMS' QUE FALTABA ===
+forms:
+  valorar_tour_form:
+    required_slots:
+      - slot_vina_a_valorar
+      - slot_rating
+      - slot_comentario
+
 actions:
   - action_recomendar_vino_db
   - action_buscar_tour
@@ -108,12 +136,11 @@ actions:
   - utter_saludar
   - utter_despedirse
   - utter_pedir_gusto
-  # === NOVEDAD: Actions de Perfil ===
   - action_registrar_usuario
   - action_iniciar_sesion
   - action_guardar_preferencia
-  - action_valorar_tour
-  # === NOVEDAD: Responses de Perfil ===
+  - validate_valorar_tour_form # Esta es la acción correcta para el formulario
+  - utter_ayuda
   - utter_pedir_email
   - utter_pedir_password
   - utter_ya_estas_logueado
@@ -121,10 +148,11 @@ actions:
   - utter_login_exitoso
   - utter_login_fallido
   - utter_preferencia_guardada
-  # === NOVEDAD: Action de Ayuda ===
-  - utter_ayuda
+  - utter_ask_slot_vina_a_valorar
+  - utter_ask_slot_rating
+  - utter_ask_slot_comentario
+  - utter_valoracion_guardada
   
-# --- RESPONSES (Respuestas predefinidas del bot) ---
 responses:
   utter_saludar:
     - text: "¡Hola! Soy VinAI, tu sommelier virtual. Puedes pedirme una recomendación de vino, buscar un tour o 'iniciar sesión' para usar tus preferencias guardadas."
@@ -135,7 +163,6 @@ responses:
   utter_pedir_gusto:
     - text: "¡Claro! Para recomendarte el vino perfecto, ¿podrías decirme qué tipo de vino prefieres (tinto, blanco, etc.), alguna cepa o con qué comida lo vas a maridar?"
 
-  # === NOVEDAD: Responses de Perfil ===
   utter_pedir_email:
     - text: "Perfecto, ¿cuál es tu email?"
   utter_pedir_password:
@@ -150,6 +177,17 @@ responses:
     - text: "Lo siento, no pude verificar tus credenciales. ¿El email y contraseña son correctos?"
   utter_preferencia_guardada:
     - text: "¡Entendido! He guardado esa preferencia en tu perfil."
-    # === NOVEDAD: Response de Ayuda ===
+
+  # === CORRECCIÓN DE INDENTACIÓN ===
   utter_ayuda:
     - text: "¡Claro! Soy VinAI, tu asistente de vinos y enoturismo. Puedo ayudarte con esto:<br><br>* **Recomendar Vinos:** Pídeme un vino por cepa, año, maridaje o características (ej. 'recomiéndame un tinto para carnes').<br>* **Buscar Tours:** Pregúntame por tours en una viña específica (ej. '¿qué tours hay en Santa Rita?').<br>* **Recomendar Tours:** Pídeme que te recomiende un tour por valle (ej. 'recomiéndame un tour en Colchagua').<br>* **Crear tu Perfil:** Escribe 'iniciar sesión' o 'registrarme' para guardar tus gustos.<br>* **Guardar Gustos:** Si iniciaste sesión, puedes decirme 'guarda que me gusta el Carmenere'.<br>* **Valorar Tours:** Si iniciaste sesión, puedes decir 'quiero valorar Montes con 5 estrellas'."
+
+  # --- Responses del Formulario ---
+  utter_ask_slot_vina_a_valorar:
+    - text: "¿Qué viña te gustaría valorar?"
+  utter_ask_slot_rating:
+    - text: "¡Perfecto! ¿Qué puntaje del 1 al 5 le das a {slot_vina_a_valorar}?"
+  utter_ask_slot_comentario:
+    - text: "Gracias. ¿Te gustaría añadir un comentario? (o puedes decir 'no')"
+  utter_valoracion_guardada:
+    - text: "¡Listo! He guardado tu valoración para {slot_vina_a_valorar}. ¡Gracias por tu feedback!"

@@ -86,7 +86,14 @@ nlu:
     - quiero valorar el tour de [Santa Rita](vina)
     - calificar el recorrido de [Concha y Toro](vina)
     - me gustaría darle 5 estrellas a [Montes](vina)
-# === NOVEDAD: Ejemplos de Ayuda ===
+    - valorar una viña
+    - quiero calificar una viña
+    - dar un puntaje a [Casa Silva](vina)
+    - quiero dejar una reseña de [Montes](vina)
+    - valorar
+    - reseñar tour
+    - me gustaría valorar un tour que hice
+
 - intent: pedir_ayuda
   examples: |
     - ayuda
@@ -94,13 +101,27 @@ nlu:
     - menú
     - ¿cuáles son tus comandos?
     - no sé qué hacer
-    - ¿cómo funcionas?    - valorar una viña
+    - ¿cómo funcionas?
 
+- intent: informar_rating
+  examples: |
+    - un [5](rating_number)
+    - le doy [4](rating_number) estrellas
+    - [3](rating_number)
+    - [1](rating_number) estrella
+    - [2](rating_number)
 
+- intent: informar_comentario
+  examples: |
+    - el tour fue increíble
+    - me encantó el guía
+    - horrible, no lo recomiendo
+    - fue una gran experiencia
+    - no
+    - no gracias
+    - sin comentario
 
-# === CORRECCIÓN: Los 'lookup' van aquí, al nivel superior ===
-# No deben estar dentro del 'intent: valorar_tour'
-
+# --- (Lookups) ---
 - lookup: caracteristica
   examples: |
     - Robusto

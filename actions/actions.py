@@ -5,6 +5,11 @@ from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, FollowupAction
 import mysql.connector
 
+# === NOVEDAD: Corrección de la importación ===
+# Importamos FormValidationAction desde 'rasa_sdk.forms'
+from rasa_sdk.forms import FormValidationAction
+# === FIN DE NOVEDAD ===
+
 # Importaciones para el login y tipos
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -36,19 +41,21 @@ VALLEY_MAPS = {
 def _get_db_connection():
     return mysql.connector.connect(**DB_CONFIG)
 
-# --- Carga Dinámica de Palabras Clave ---
+## === NOVEDAD: Carga Dinámica de Palabras Clave (ACTUALIZADA) ===
 
 def _load_gazettes_from_db() -> Dict[str, List[str]]:
     """
     Se conecta a la DB al iniciar y carga las palabras clave
-    para reconocimiento de entidades (sabores, maridajes, etc.)
+    para reconocimiento de entidades (sabores, maridajes, viñas, etc.)
     """
     gazettes = {
         "notas_sabor": [],
         "maridajes": [],
-        "caracteristicas": []
+        "caracteristicas": [],
+        "vinas": [] # <-- NOVEDAD
     }
     
+    conn = None
     try:
         print("Cargando palabras clave (gazettes) desde la base de datos...")
         conn = _get_db_connection()
@@ -68,16 +75,24 @@ def _load_gazettes_from_db() -> Dict[str, List[str]]:
         cursor.execute("SELECT nombre FROM caracteristicas")
         for row in cursor.fetchall():
             gazettes["caracteristicas"].append(row[0].lower())
+
+        # === NOVEDAD: Cargar Nombres de Viñas ===
+        cursor.execute("SELECT nombre FROM vinas")
+        for row in cursor.fetchall():
+            gazettes["vinas"].append(row[0].lower())
+        # === FIN NOVEDAD ===
             
         cursor.close()
-        conn.close()
-        print(f"Carga exitosa: {len(gazettes['notas_sabor'])} sabores, {len(gazettes['maridajes'])} maridajes, {len(gazettes['caracteristicas'])} características.")
+        print(f"Carga exitosa: {len(gazettes['notas_sabor'])} sabores, {len(gazettes['maridajes'])} maridajes, {len(gazettes['caracteristicas'])} características, {len(gazettes['vinas'])} viñas.")
         
     except mysql.connector.Error as err:
         print(f"Error al cargar gazettes desde DB: {err}")
-        print("Usando lista de 'SABOR_KEYWORDS' de respaldo.")
-        # Fallback por si la DB falla
-        gazettes["notas_sabor"] = ['vainilla', 'chocolate', 'pimienta', 'manzana', 'cereza', 'guinda', 'ciruela', 'cedro', 'tabaco', 'eucalipto', 'cítrico', 'melocotón', 'frutilla', 'arándano', 'miel', 'durazno', 'hierba', 'café', 'frambuesa']
+        # Fallback (solo para sabores, que era el original)
+        if not gazettes["notas_sabor"]:
+            print("Usando lista de 'SABOR_KEYWORDS' de respaldo.")
+            gazettes["notas_sabor"] = ['vainilla', 'chocolate', 'pimienta', 'manzana', 'cereza', 'guinda', 'ciruela', 'cedro', 'tabaco', 'eucalipto', 'cítrico', 'melocotón', 'frutilla', 'arándano', 'miel', 'durazno', 'hierba', 'café', 'frambuesa']
+    finally:
+        if conn: conn.close()
 
     return gazettes
 
@@ -216,37 +231,49 @@ class ActionGuardarPreferencia(Action):
             if conn: conn.close()
         return []
 
-class ActionValorarTour(Action):
-    """Permite a un usuario logueado valorar un tour."""
-    def name(self) -> Text:
-        return "action_valorar_tour"
+# === NOVEDAD: Formulario de Valoración (Reemplaza a ActionValorarTour) ===
 
-    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+class ValidateValorarTourForm(FormValidationAction):
+    """Valida los slots y guarda la valoración del tour."""
+    def name(self) -> Text:
+        return "validate_valorar_tour_form"
+
+    async def validate_slot_vina_a_valorar(
+        self,
+        value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
+        """Valida el nombre de la viña."""
         
+        # 1. Verificar si el usuario está logueado
         user_id_str = tracker.sender_id
         if not user_id_str or not user_id_str.startswith("user_"):
             dispatcher.utter_message(text="Debes 'iniciar sesión' para poder valorar un tour.")
-            return []
+            return {"slot_vina_a_valorar": None, "requested_slot": None} # Detiene el formulario
+
+        # 2. Intentar extraer la viña del primer mensaje (ej: "valorar Casa Silva")
+        # Usamos la misma lógica de fallback de NLU
+        vina_nombre = None
+        latest_message = tracker.latest_message.get('text', '').lower()
         
-        try:
-            usuario_id = int(user_id_str.split("_")[1])
-        except (IndexError, ValueError):
-            dispatcher.utter_message(text="Hubo un problema al identificar tu sesión. Intenta 'iniciar sesión' de nuevo.")
-            return []
+        # Intento 1: Entidad de Rasa (si el NLU la extrajo)
+        vina_nombre_entidad = next(tracker.get_latest_entity_values("vina"), None)
+        if vina_nombre_entidad:
+            vina_nombre = vina_nombre_entidad
+        else:
+            # Intento 2: Búsqueda manual en el texto usando GAZETTE
+            for vina_db in GAZETTE["vinas"]:
+                if vina_db in latest_message:
+                    vina_nombre = vina_db.capitalize()
+                    break
 
-        vina_nombre = next(tracker.get_latest_entity_values("vina"), None)
         if not vina_nombre:
-            dispatcher.utter_message(text="¿Qué viña te gustaría valorar? Por favor, dímelo de nuevo (ej: 'valorar Santa Rita').")
-            return []
-
-        latest_message = tracker.latest_message.get('text', '')
-        match = re.search(r'\b([1-5])\b', latest_message)
-        rating = int(match.group(1)) if match else None
-
-        if not rating:
-            dispatcher.utter_message(text=f"No detecté un puntaje. ¿Qué puntaje del 1 al 5 le das a {vina_nombre}?")
-            return [] 
-
+            # Si no se encontró, Rasa preguntará (utter_ask_slot_vina_a_valorar)
+            return {"slot_vina_a_valorar": None}
+        
+        # 3. Validar si la viña existe en la DB
         conn = _get_db_connection()
         try:
             cursor = conn.cursor(dictionary=True)
@@ -255,26 +282,108 @@ class ActionValorarTour(Action):
             
             if not vina:
                 dispatcher.utter_message(text=f"No encontré una viña con el nombre '{vina_nombre}' en mi base de datos.")
-                return []
+                return {"slot_vina_a_valorar": None}
             
-            vina_id = vina['id']
-            
-            # Inserta en la tabla 'valoraciones_tour'
-            cursor.execute("DELETE FROM valoraciones_tour WHERE usuario_id = %s AND vina_id = %s", (usuario_id, vina_id))
-            query = "INSERT INTO valoraciones_tour (usuario_id, vina_id, rating, comentario) VALUES (%s, %s, %s, %s)"
-            cursor.execute(query, (usuario_id, vina_id, rating, latest_message))
-            conn.commit()
-            
-            dispatcher.utter_message(text=f"¡Gracias! Tu valoración de {rating} estrellas para {vina_nombre} ha sido guardada.")
+            # 4. Guardamos el nombre capitalizado y el ID de la viña (en un slot no-mapeado)
+            return {"slot_vina_a_valorar": vina_nombre.capitalize()}
 
         except mysql.connector.Error as err:
-            print(f"Error en ActionValorarTour: {err}")
+            print(f"Error de DB en validate_slot_vina_a_valorar: {err}")
+            dispatcher.utter_message(text="Tuvimos un problema al validar la viña.")
+            return {"slot_vina_a_valorar": None}
+        finally:
+            if conn: conn.close()
+
+    async def validate_slot_rating(
+        self,
+        value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
+        """Valida el rating (puntaje)."""
+        latest_message = tracker.latest_message.get('text', '')
+        
+        # Intentamos extraer un número del 1 al 5
+        match = re.search(r'\b([1-5])\b', latest_message)
+        
+        if match:
+            rating = match.group(1)
+            return {"slot_rating": rating}
+        else:
+            # Si el NLU extrajo un 'rating_number' (ej: "un cinco"), 'value' ya lo tendrá
+            if value in ["1", "2", "3", "4", "5"]:
+                return {"slot_rating": value}
+            
+        dispatcher.utter_message(text="No entendí ese puntaje. Por favor, dime un número del 1 al 5.")
+        return {"slot_rating": None}
+
+    async def validate_slot_comentario(
+        self,
+        value: Any,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> Dict[Text, Any]:
+        """Valida el comentario."""
+        latest_message = tracker.latest_message.get('text', '').lower()
+
+        # Si el usuario no quiere dejar comentario
+        if latest_message in ["no", "no gracias", "sin comentario", "nop"]:
+            return {"slot_comentario": "Sin comentario"}
+        
+        # Si el NLU detectó 'informar_comentario', 'value' es 'placeholder'.
+        # Usamos el texto completo del usuario como comentario.
+        return {"slot_comentario": latest_message}
+
+    def submit(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        """
+        Esta función se llama cuando TODOS los slots requeridos están llenos.
+        Guarda los datos en la base de datos.
+        """
+        
+        user_id_str = tracker.sender_id
+        usuario_id = int(user_id_str.split("_")[1])
+        vina_nombre = tracker.get_slot("slot_vina_a_valorar")
+        rating = tracker.get_slot("slot_rating")
+        comentario = tracker.get_slot("slot_comentario")
+
+        conn = _get_db_connection()
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # 1. Obtener el ID de la viña (ya validada)
+            cursor.execute("SELECT id FROM vinas WHERE nombre LIKE %s LIMIT 1", (f"%{vina_nombre}%",))
+            vina = cursor.fetchone()
+            vina_id = vina['id']
+
+            # 2. Borrar valoración antigua y guardar la nueva
+            cursor.execute("DELETE FROM valoraciones_tour WHERE usuario_id = %s AND vina_id = %s", (usuario_id, vina_id))
+            query = "INSERT INTO valoraciones_tour (usuario_id, vina_id, rating, comentario) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (usuario_id, vina_id, rating, comentario))
+            conn.commit()
+            
+            # 3. Enviar mensaje de éxito
+            dispatcher.utter_message(response="utter_valoracion_guardada")
+            
+        except mysql.connector.Error as err:
+            print(f"Error de DB en submit de valorar_tour_form: {err}")
             dispatcher.utter_message(text="Tuvimos un problema al guardar tu valoración.")
         finally:
             if conn: conn.close()
-        return []
-
-# === FIN DE ACCIONES DE PERFIL ===
+            
+        # 4. Limpiar los slots del formulario
+        return [
+            SlotSet("slot_vina_a_valorar", None),
+            SlotSet("slot_rating", None),
+            SlotSet("slot_comentario", None),
+        ]
+# === FIN DE NOVEDAD ===
 
 
 # === ACCIÓN DE RECOMENDAR VINO (ACTUALIZADA CON PERFIL Y NLU DINÁMICO) ===

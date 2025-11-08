@@ -51,10 +51,24 @@ rules:
   - intent: guardar_preferencia_vino
   - action: action_guardar_preferencia
 
-- rule: Valorar tour
+# === NOVEDAD: Regla actualizada para activar el Formulario ===
+- rule: Activar formulario de valoración
   steps:
   - intent: valorar_tour
-  - action: action_valorar_tour
+  - action: valorar_tour_form
+  - active_loop: valorar_tour_form
+
+# === NOVEDAD: Regla para manejar el envío del formulario ===
+- rule: Enviar formulario de valoración
+  condition:
+  # La condición es que el formulario esté activo
+  - active_loop: valorar_tour_form
+  steps:
+  # La acción 'valorar_tour_form' se llama
+  - action: valorar_tour_form
+  # El loop se desactiva
+  - active_loop: null
+  # (La lógica de guardado ahora estará en actions.py)
 
   # === NOVEDAD: Regla de Ayuda ===
 - rule: Responder a la petición de ayuda
