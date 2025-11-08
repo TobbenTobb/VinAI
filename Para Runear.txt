@@ -1,17 +1,3 @@
-Para hacer funcionar el proyecto debes instalar 
-
-Debes utilizar python 3.10, si tienes otro python puedes instalarlo igual sin problemas
-luego instalas
-
-pip install rasa
-pip install rasa-sdk
-pip install Flask-Login
-pip install Werkzeug
-
-y debes agregar la BD en el xampp y debe estar runeando el xampp para no tener problemas
-
-y visual estudio code te va a pedeir que python usa y le dices python 3.10
-
 Para entrenarlo si haces modificaciones
 
 rasa train
@@ -31,6 +17,8 @@ Escribes
 rasa run --enable-api --cors "*"
 
 Y
+
+python admin_app.py
 
 python -m http.server 8000
 

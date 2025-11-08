@@ -44,6 +44,10 @@ nlu:
     - algo para [parrillada](maridaje)
     - con notas a [pimienta](sabor_nota)
     - en el [valle del maipo](valle)
+    - Lugar Bonito # <--- ¡AÑADE ESTA LÍNEA!
+    - Fue un tour excelente # <--- (Opcional, pero recomendado)
+    - no me gustó # <--- (Opcional, pero recomendado)
+    
 - intent: buscar_tour_vina
   examples: |
     - qué tours hay en la viña [Santa Rita](vina)?
@@ -111,17 +115,17 @@ nlu:
     - [1](rating_number) estrella
     - [2](rating_number)
 
-- intent: afirmar_comentario
+- intent: informar_comentario
   examples: |
-    - /afirmar_comentario
-    - quiero escribir un comentario
-    - si
-
-- intent: negar_comentario
-  examples: |
-    - /negar_comentario
-    - no quiero escribir un comentario
+    - Lugar Bonito
     - no
+    - no gracias
+    - fue un tour excelente
+    - me gustó mucho
+    - horrible, no lo recomiendo
+    - estuvo bien
+    - nada que comentar
+
 
 # --- (Lookups) ---
 - lookup: caracteristica

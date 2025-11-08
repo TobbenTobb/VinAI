@@ -14,9 +14,9 @@ intents:
   - valorar_tour
   - pedir_ayuda
   - informar_rating
-  # === Intents para los botones ===
-  - afirmar_comentario 
-  - negar_comentario   
+  # === Intents de botones eliminados ===
+  # - afirmar_comentario (ELIMINADO)
+  # - negar_comentario   (ELIMINADO)
 
 entities:
   - cepa
@@ -110,7 +110,6 @@ slots:
       - active_loop: valorar_tour_form
         requested_slot: slot_vina_a_valorar
 
-# === INICIO DE LA CORRECCIÓN ===
   slot_rating:
     type: categorical
     values: ["1", "2", "3", "4", "5"] 
@@ -118,34 +117,28 @@ slots:
     mappings:
     - type: from_entity
       entity: rating_number
-    # Añadimos un fallback para que acepte texto plano
-    # y deje que 'validate_slot_rating' en actions.py haga el trabajo
     - type: from_text
       conditions:
       - active_loop: valorar_tour_form
         requested_slot: slot_rating
   
+  # === INICIO DE LA MODIFICACIÓN ===
   slot_comentario:
     type: text
     influence_conversation: false
     mappings:
-    # 1. Si el usuario pulsa [No, gracias]
+    # 1. Mapear desde el nuevo intent
     - type: from_intent
-      intent: negar_comentario
-      value: "Sin comentario" 
-      
-    # 2. Si el usuario pulsa [Escribir Comentario]
-    - type: from_intent
-      intent: afirmar_comentario
-      value: "ESCRIBIENDO" # Valor temporal
-
-    # 3. Si el usuario escribe texto (y el formulario espera el comentario)
-    #    (Se eliminó la condición errónea 'slot_comentario: "ESCRIBIENDO"')
+      intent: informar_comentario
+      value: "Valor extraído del intent" # El valor real lo toma del texto
+      conditions:
+      - active_loop: valorar_tour_form
+        requested_slot: slot_comentario
+    # 2. Mapear desde texto libre (si el intent falla)
     - type: from_text
       conditions:
       - active_loop: valorar_tour_form
         requested_slot: slot_comentario
-  # === FIN DE CORRECCIÓN ===
 
 forms:
   valorar_tour_form:
@@ -177,8 +170,8 @@ actions:
   - utter_ask_slot_rating
   - utter_ask_slot_comentario
   - utter_valoracion_guardada
-  # --- Acción faltante añadida ---
-  - utter_puedes_escribir
+  # --- Acción eliminada ---
+  # - utter_puedes_escribir (ELIMINADO)
   
 responses:
   utter_saludar:
@@ -214,17 +207,14 @@ responses:
   utter_ask_slot_rating:
     - text: "¡Perfecto! ¿Qué puntaje del 1 al 5 le das a {slot_vina_a_valorar}?"
 
+  # === INICIO DE LA MODIFICACIÓN ===
   utter_ask_slot_comentario:
-    - text: "Gracias. ¿Te gustaría añadir un comentario?"
-      buttons:
-      - title: "Escribir Comentario"
-        payload: /afirmar_comentario
-      - title: "No, gracias"
-        payload: /negar_comentario
-
-  # --- Respuesta faltante añadida ---
-  utter_puedes_escribir:
-    - text: "Adelante, escribe tu comentario."
+    - text: "Gracias. Por favor, escribe un breve comentario sobre tu experiencia (o escribe 'no' si prefieres no comentar)."
+      # Botones eliminados
+  # === FIN DE MODIFICACIÓN ===
+  
+  # --- Respuesta eliminada ---
+  # utter_puedes_escribir: (ELIMINADO)
   
   utter_valoracion_guardada:
     - text: "¡Listo! He guardado tu valoración para {slot_vina_a_valorar}. ¡Gracias por tu feedback!"

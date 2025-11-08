@@ -354,7 +354,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Funciones del Modal ---
     function openModal() { userModalBackdrop.style.display = 'block'; userModal.style.display = 'block'; }
-    function closeModal() { userModalBackmDrop.style.display = 'none'; userModal.style.display = 'none'; loginError.textContent = ''; registerError.textContent = ''; }
+    function closeModal() { 
+    userModalBackdrop.style.display = 'none';
+    userModal.style.display = 'none'; 
+    loginError.textContent = ''; 
+    registerError.textContent = ''; 
+    }
     function showRegisterForm() { loginForm.style.display = 'none'; registerForm.style.display = 'block'; showRegisterLink.style.display = 'none'; showLoginLink.style.display = 'block'; modalTitle.textContent = 'Crear Cuenta'; }
     function showLoginForm() { loginForm.style.display = 'block'; registerForm.style.display = 'none'; showRegisterLink.style.display = 'block'; showLoginLink.style.display = 'none'; modalTitle.textContent = 'Iniciar Sesión'; }
 

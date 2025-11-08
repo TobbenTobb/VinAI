@@ -1,6 +1,8 @@
 import re
 from typing import Any, Text, Dict, List, Optional
-# Corrección de la importación de FormValidationAction
+# === ¡PASO 1: AÑADIR ESTA LÍNEA! ===
+import logging
+# ==================================
 from rasa_sdk.forms import FormValidationAction
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
@@ -173,7 +175,7 @@ class ActionGuardarPreferencia(Action):
             if conn: conn.close()
         return []
 
-# === Formulario de Valoración (ACTUALIZADO) ===
+# === Formulario de Valoración (ACTUALIZADO CON LOGGING FORZADO) ===
 class ValidateValorarTourForm(FormValidationAction):
     """Valida los slots y guarda la valoración del tour."""
     def name(self) -> Text:
@@ -186,47 +188,52 @@ class ValidateValorarTourForm(FormValidationAction):
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
-        """Valida el nombre de la viña."""
+        """Valida el nombre de la viña (Versión Blindada)."""
+        logger = logging.getLogger(__name__) # Obtener logger
+        conn = None 
         
-        user_id_str = tracker.sender_id
-        if not user_id_str or not user_id_str.startswith("user_"):
-            dispatcher.utter_message(text="Debes 'iniciar sesión' para poder valorar un tour.")
-            return {"slot_vina_a_valorar": None, "requested_slot": None} 
-
-        vina_nombre = None
-        
-        # 'value' ya contiene el texto/entidad de la viña (ej: "Lapostolle")
-        if value:
-            vina_nombre = value
-        else:
-            # Si 'value' está vacío, lo buscamos en el texto original
-            latest_message = tracker.latest_message.get('text', '').lower()
-            for vina_db in GAZETTE["vinas"]:
-                if vina_db in latest_message:
-                    vina_nombre = vina_db.capitalize()
-                    break
-
-        if not vina_nombre:
-            return {"slot_vina_a_valorar": None}
-        
-        conn = _get_db_connection()
         try:
+            user_id_str = tracker.sender_id
+            if not user_id_str or not user_id_str.startswith("user_"):
+                dispatcher.utter_message(text="Debes 'iniciar sesión' para poder valorar un tour.")
+                return {"slot_vina_a_valorar": None, "requested_slot": None} 
+
+            vina_nombre = None
+            
+            if value:
+                vina_nombre = value
+            else:
+                latest_message = tracker.latest_message.get('text', '').lower()
+                for vina_db in GAZETTE["vinas"]:
+                    if vina_db in latest_message:
+                        vina_nombre = vina_db.capitalize()
+                        break
+
+            if not vina_nombre:
+                logger.debug("validate_vina: No se encontró viña, pidiendo al usuario.")
+                return {"slot_vina_a_valorar": None}
+            
+            conn = _get_db_connection()
             cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT id FROM vinas WHERE nombre LIKE %s LIMIT 1", (f"%{vina_nombre}%",))
             vina = cursor.fetchone()
             
             if not vina:
-                dispatcher.utter_message(text=f"No encontré una viña con el nombre '{vina_nombre}' en mi base de datos.")
+                logger.debug(f"validate_vina: Viña '{vina_nombre}' no encontrada en DB. Pidiendo de nuevo.")
+                dispatcher.utter_message(text=f"No encontré una viña con el nombre '{vina_nombre}' en mi base de datos. ¿Puedes verificar el nombre?")
                 return {"slot_vina_a_valorar": None}
             
+            logger.debug(f"validate_vina: Viña '{vina_nombre}' validada con éxito.")
             return {"slot_vina_a_valorar": vina_nombre.capitalize()}
 
-        except mysql.connector.Error as err:
-            print(f"Error de DB en validate_slot_vina_a_valorar: {err}")
-            dispatcher.utter_message(text="Tuvimos un problema al validar la viña.")
-            return {"slot_vina_a_valorar": None}
+        except Exception as e:
+            logger.error(f"ERROR INESPERADO en validate_slot_vina_a_valorar: {e}", exc_info=True) 
+            dispatcher.utter_message(text="Tuvimos un problema inesperado al validar la viña. El equipo técnico ha sido notificado.")
+            return {"slot_vina_a_valorar": None, "requested_slot": None}
+            
         finally:
-            if conn: conn.close()
+            if conn: 
+                conn.close()
 
     async def validate_slot_rating(
         self,
@@ -236,17 +243,21 @@ class ValidateValorarTourForm(FormValidationAction):
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
         """Valida el rating (puntaje)."""
+        logger = logging.getLogger(__name__)
         latest_message = tracker.latest_message.get('text', '')
         
         match = re.search(r'\b([1-5])\b', latest_message)
         
         if match:
             rating = match.group(1)
+            logger.debug(f"validate_rating: Rating '{rating}' validado (por regex).")
             return {"slot_rating": rating}
         else:
             if value in ["1", "2", "3", "4", "5"]:
+                logger.debug(f"validate_rating: Rating '{value}' validado (por entidad).")
                 return {"slot_rating": value}
             
+        logger.debug(f"validate_rating: Rating '{value}' inválido. Pidiendo de nuevo.")
         dispatcher.utter_message(text="No entendí ese puntaje. Por favor, dime un número del 1 al 5.")
         return {"slot_rating": None}
 
@@ -257,20 +268,21 @@ class ValidateValorarTourForm(FormValidationAction):
         tracker: Tracker,
         domain: Dict[Text, Any],
     ) -> Dict[Text, Any]:
-        """Valida el comentario."""
+        """
+        Valida el comentario. Acepta el texto o 
+        guarda 'Sin comentario' si el usuario dice no.
+        """
+        logger = logging.getLogger(__name__)
+        comentario_texto = str(value)
         
-        # 'value' ya viene con "Sin comentario" o "ESCRIBIENDO" desde el domain.yml
-        if value == "Sin comentario":
+        if comentario_texto.lower() in ["no", "no gracias", "sin comentario", "ninguno"]:
+            logger.debug("validate_comentario: Usuario no quiso comentar. Guardando 'Sin comentario'.")
             return {"slot_comentario": "Sin comentario"}
         
-        if value == "ESCRIBIENDO":
-            dispatcher.utter_message(response="utter_puedes_escribir")
-            return {"slot_comentario": "ESCRIBIENDO"} 
-        
-        # Si 'value' no es ninguno de esos, es el texto real del usuario.
-        # Lo aceptamos.
-        return {"slot_comentario": value}
+        logger.debug(f"validate_comentario: Comentario '{comentario_texto}' validado.")
+        return {"slot_comentario": comentario_texto}
 
+    # === ¡PASO 2: MODIFICAR ESTA FUNCIÓN! ===
     def submit(
         self,
         dispatcher: CollectingDispatcher,
@@ -279,44 +291,73 @@ class ValidateValorarTourForm(FormValidationAction):
     ) -> List[Dict[Text, Any]]:
         """
         Guarda los datos en la base de datos AL FINAL.
+        Versión con logging forzado.
         """
         
-        user_id_str = tracker.sender_id
-        usuario_id = int(user_id_str.split("_")[1])
-        vina_nombre = tracker.get_slot("slot_vina_a_valorar")
-        rating = tracker.get_slot("slot_rating")
-        comentario = tracker.get_slot("slot_comentario")
-
-        conn = _get_db_connection()
+        # Obtener el logger de RASA
+        logger = logging.getLogger(__name__)
+        logger.debug("Submit: Iniciando función submit.") 
+        
+        conn = None 
+        
         try:
+            user_id_str = tracker.sender_id
+            if not user_id_str or not user_id_str.startswith("user_"):
+                 logger.warning(f"Submit: Usuario no logueado (sender_id: {user_id_str}). Cancelando.")
+                 dispatcher.utter_message(text="Error de sesión. Por favor, 'inicia sesión' de nuevo para valorar.")
+                 return [] 
+
+            usuario_id = int(user_id_str.split("_")[1])
+            vina_nombre = tracker.get_slot("slot_vina_a_valorar")
+            rating = tracker.get_slot("slot_rating")
+            comentario = tracker.get_slot("slot_comentario")
+            
+            # Logging de datos
+            logger.debug(f"Submit: Datos a guardar: UserID={usuario_id}, Viña={vina_nombre}, Rating={rating}, Comentario={comentario}")
+
+            conn = _get_db_connection()
             cursor = conn.cursor(dictionary=True)
             
             cursor.execute("SELECT id FROM vinas WHERE nombre LIKE %s LIMIT 1", (f"%{vina_nombre}%",))
             vina = cursor.fetchone()
+            
+            if not vina:
+                logger.warning(f"Submit: No se encontró la viña '{vina_nombre}' en la DB (pasó la validación pero falló aquí).")
+                dispatcher.utter_message(text=f"Error fatal: No pude volver a encontrar {vina_nombre} en la base de datos.")
+                return []
+
             vina_id = vina['id']
+            logger.debug(f"Submit: Viña ID encontrada: {vina_id}")
 
             cursor.execute("DELETE FROM valoraciones_tour WHERE usuario_id = %s AND vina_id = %s", (usuario_id, vina_id))
+            logger.debug("Submit: DELETE de valoración anterior (si existía) completado.")
+            
             query = "INSERT INTO valoraciones_tour (usuario_id, vina_id, rating, comentario) VALUES (%s, %s, %s, %s)"
             cursor.execute(query, (usuario_id, vina_id, rating, comentario))
+            logger.debug("Submit: INSERT de nueva valoración completado.")
             
-            # === ¡¡¡ESTA ES LA LÍNEA QUE FALTABA!!! ===
             conn.commit()
-            # ========================================
+            logger.debug("Submit: conn.commit() exitoso.")
             
             dispatcher.utter_message(response="utter_valoracion_guardada")
+        
+        # Modificado para usar logger.error
+        except Exception as e:
+            # Esto SÍ O SÍ aparecerá en el log --debug
+            logger.error(f"ERROR INESPERADO en submit de valorar_tour_form: {e}", exc_info=True) 
+            dispatcher.utter_message(text="Tuvimos un problema inesperado al guardar tu valoración. El equipo técnico ha sido notificado.")
             
-        except mysql.connector.Error as err:
-            print(f"Error de DB en submit de valorar_tour_form: {err}")
-            dispatcher.utter_message(text="Tuvimos un problema al guardar tu valoración.")
         finally:
-            if conn: conn.close()
+            if conn: 
+                conn.close()
+                logger.debug("Submit: Conexión a DB cerrada.")
             
         return [
             SlotSet("slot_vina_a_valorar", None),
             SlotSet("slot_rating", None),
             SlotSet("slot_comentario", None),
         ]
-
+        
 # === ACCIÓN DE RECOMENDAR VINO (ACTUALIZADA) ===
 class ActionRecomendarVinoDb(Action):
     def name(self) -> Text: 
