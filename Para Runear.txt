@@ -1,44 +1,89 @@
-Para entrenarlo si haces modificaciones
+Para Runear el programa se nececita
 
-rasa train
+Nececitas instalar
 
-Luego abres 2 terminales
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+pip install rasa 
 
-en la Primera terminal 
+Es el motor principal del chatbot. 
+Al instalar rasa, automáticamente se instalan también rasa-sdk, tensorflow, sanic y muchas otras dependencias que el bot necesita para correr.
 
-Escribes
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-rasa run actions
+pip install mysql-connector-python
 
-y en la segunda terminal 
+Esta es la librería clave que permite a Python conectarse a tu base de datos MySQL. 
+Es usada tanto por actions.py (para guardar valoraciones y leer vinos) como por admin_app.py (para mostrar el dashboard y el perfil).
 
-Escribes
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-rasa run --enable-api --cors "*"
+pip install Flask 
 
-Y
+Es el micro-framework web que usas para correr todo tu panel de administrador, incluyendo el login y la página de perfil (todo tu archivo admin_app.py).
 
-python admin_app.py
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-python -m http.server 8000
+pip install Flask-Login
 
-y cuando diga en la primera terminal
+Lo importas en admin_app.py para manejar la sesión segura del administrador (el login_required, current_user, etc.).
 
-2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Starting action endpoint server...
-2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_recomendar_vino_db'.
-2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_buscar_tour'.
-2025-10-20 19:11:38 INFO     rasa_sdk.executor  - Registered function for 'action_recomendar_tour_db'.
-2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Starting plugins...
-2025-10-20 19:11:38 INFO     rasa_sdk.endpoint  - Action endpoint is up and running on http://0.0.0.0:5055
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Y en la segunda
+pip install Flask-Cors
 
-2025-10-20 19:12:07 INFO     root  - Starting Rasa server on http://0.0.0.0:5005
-2025-10-20 19:12:07 INFO     rasa.core.processor  - Loading model models\20251020-183548-generous-differential.tar.gz...
-2025-10-20 19:12:23 WARNING  rasa.shared.utils.common  - The UnexpecTED Intent Policy is currently experimental and might change or be removed in the future 🔬 Please share your feedback on it in the forum (https://forum.rasa.com) to help us make this feature ready for production.
-2025-10-20 19:12:23 INFO     root  - Rasa server is up and running.
+Lo usas en admin_app.py (CORS(app)) para permitir que tu chat (en localhost:8000) pueda hacer peticiones a tu servidor de login (en localhost:8080).
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Y con eso abres el index y ya funcionara todo
+pip install Werkzeug
 
-Crtl + C para parar las terminales
+Lo usas para el hashing seguro de contraseñas (generate_password_hash, check_password_hash). 
+Nota: Esta librería casi siempre se instala automáticamente junto con Flask, pero es bueno saber que es una dependencia.
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Ahora tendras que abrir 4 Terminales distintas 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Primera terminal
+
+python -m http.server 8000  
+
+Para iniciar el servidor y funcione las paginas
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Segunda Terminal
+
+python admin_app.py 
+
+Para Habilitar el funcionamiento de admin_app
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Tercera Terminal 
+
+rasa run actions --debug 
+
+Para Habilitar El Bot con su pensamiento
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Cuarta Terminal
+
+rasa run --enable-api --cors "*" --debug  
+
+Para Habilitar las funciones del Bot
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Si llegaras a modifciar Cualquier Archivo que termine en .yml Tendras que parar todas las terminales y en una nueva terminal usar
+
+rasa train 
+
+Con esto se entrenara deneuvo el modelo
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Luego vuelves a runear todo en sus terminales 
